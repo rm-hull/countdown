@@ -1,11 +1,23 @@
-data Value = Int
+-- The countdown problem, pp156-167
+
 data Op = Add | Sub | Mul | Div
-data Expr = Num Int | App Op Expr Expr
+data Expr = Num Value | App Op Expr Expr
+type Value = Int
+
+instance Show Op where
+    show (Add) = "+"
+    show (Sub) = "-"
+    show (Mul) = "*"
+    show (Div) = "/"
+
+instance Show Expr where
+    show (Num x) = show x
+    show (App op e1 e2) = "(" ++ show e1 ++ show op ++ show e2 ++ ")"
 
 apply Add = (+)
 apply Sub = (-)
 apply Mul = (*)
-apply Div = (/)
+apply Div = (div) -- cannot use / for integer division
 
 subseqs [x] = [[x]]
 subseqs (x : xs) = xss ++ [x] : map (x :) xss
@@ -19,7 +31,7 @@ legal :: Op -> Value -> Value -> Bool
 legal Add v1 v2 = True
 legal Sub v1 v2 = (v2 < v1)
 legal Mul v1 v2 = True
-legal Div v1 v2 = (v1 mod v2 == 0)
+legal Div v1 v2 = v1 `mod` v2 == 0
 
 mkExprs :: [Value] -> [(Expr, Value)]
 mkExprs [x] = [(Num x, x)]
@@ -49,5 +61,9 @@ search n d ev ((e, v) : evs) | d' == 0  = (e, v)
                                where d' = abs (n - v)
 
 countdown1 :: Int -> [Int] -> (Expr, Value)
-countdown1 n = nearest n . concatMap mkExprs . subseqs 
+countdown1 n = nearest n . concatMap mkExprs . subseqs
 
+--
+-- ghci> countdown1 831 [1,3,7,10,25,50]
+-- ((7+((1+10)*(25+50))),832)
+--
